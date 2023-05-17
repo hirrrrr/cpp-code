@@ -1,0 +1,603 @@
+#include<iostream>
+#include<fstream>
+#include<iomanip>
+#include<string.h>
+#include<stdlib.h>
+#include<cstdio>
+#include<vector>
+
+
+using namespace std;
+
+class book
+{
+protected:
+    char bkname[25];
+    char pubnam[25];
+    int isbn;
+    int qty;
+    int price;
+    char genre[25];
+    char synopsis[75];
+
+public:
+    void getdata1()
+    {
+        fflush(stdin);
+        cout<<"Enter Book name: ";
+        cin.getline(bkname,25);
+        cout<<"Enter publisher name: ";
+        cin.getline(pubnam,25);
+        cout<<"Enter book qty: ";
+        cin>>qty;
+        cout<<"Enter book price: ";
+        cin>>price;
+        do {
+             fflush(stdin);
+             cout<<"Enter data only from the given options"<<endl;
+             cout << "Enter genre: (action/horror/crime/romantic/fantasy/suspense): ";
+             cin.getline(genre, 25);
+           } while (strcmp(genre, "action") != 0 &&
+                    strcmp(genre, "horror") != 0 &&
+                    strcmp(genre, "crime") != 0 &&
+                    strcmp(genre, "romantic") != 0 &&
+                    strcmp(genre, "fantasy") != 0 &&
+                    strcmp(genre, "suspense") != 0);
+
+        cout<<"Enter isbn number: ";
+        cin>>isbn;
+        fflush(stdin);
+        cout<<"Enter synopsis: ";
+        cin.getline(synopsis,75);
+    }
+
+
+    void display1()
+    {
+        cout<<"Book name: "<<bkname<<endl;
+        cout<<"publisher name: "<<pubnam<<endl;
+        cout<<"Book qty: "<<qty<<endl;
+        cout<<"book price: "<<price<<endl;
+        cout<<"Genre: "<<genre<<endl;
+        cout<<"ISBN: "<<isbn<<endl;
+        cout<<"Synopsis: "<<synopsis<<endl;
+
+    }
+
+    char * getbkname()
+    {
+        return bkname;
+    }
+
+
+    char * getgenrename()
+    {
+        return genre;
+    }
+
+    int getbkqty()
+    {
+        return qty;
+    }
+    char * getpubname()
+    {
+        return pubnam;
+    }
+
+    int getprice()
+    {
+        return price;
+    }
+
+    char * getsynopsis()
+    {
+        return synopsis;
+    }
+    int getisbn()
+    {
+        return isbn;
+    }
+};
+
+
+
+class admin:protected book
+{
+protected:
+    string loginid="c++";
+    string pass="c++";
+    string templog;
+    string temppass;
+
+
+public:
+     int checking()
+     {
+       int userch;
+       cout<<"Enter the option: ";
+       cin>>userch;
+
+       if(userch==1)
+       {
+          cout<<"Enter the login id: ";
+          cin>>templog;
+          cout<<"Enter the password: ";
+          cin>>temppass;
+          if(templog==loginid && temppass==pass)
+            {
+                cout<<"LOGIN SUCCESSFUL";
+                return 1;
+            }
+          else
+            {
+            cerr<<"INVALID LOGIN!";
+            return 0;
+            }
+       }
+
+       else if(userch==2)
+       {
+           char namee[25];
+           return 2;
+       }
+       else
+       {
+           return 0;
+       }
+     }
+     void addbk()
+     {
+         book a;
+         ofstream f;
+         f.open("book.dat",ios::app|ios::binary);
+         if(!f)
+         {
+           cout<<"Error opening"<<endl;;
+         }
+         else
+         {
+           a.getdata1();
+           f.write((char*)&a,sizeof(a));
+           f.close();
+           cout<<"Book data added successfully!!"<<endl;
+         }
+     }
+
+    void filedis()
+    {
+        book a;
+        ifstream f;
+        f.open("book.dat", ios::in|ios::binary);
+        f.read((char*)&a, sizeof(a));
+        while(!f.eof())
+        {
+            a.display1();
+            f.read((char*)&a, sizeof(a));
+            cout << endl << endl;
+        }
+        if(f.eof())
+            cout<<"File is empty";
+        f.close();
+    }
+
+
+     void ser()
+     {
+         ifstream f;
+         book a;
+         char tempbknam[25];
+         f.open("book.dat",ios::binary);
+         if(!f)
+         {
+           cout<<"Error opening"<<endl;;
+         }
+         else
+         {
+             fflush(stdin);
+             cout<<"Enter book name: ";
+             cin.getline(tempbknam,25);
+             char *q;
+             bool found=false;
+             f.read((char*)&a,sizeof(a));
+             while(!f.eof())
+             {
+                 q=a.getbkname();
+                 if(strcmp(q,tempbknam)==0)
+                 {
+                     cout<<"Book found!!"<<endl;
+                     cout<<"Book details: ";
+                     a.display1();
+                     found=true;
+                     break;
+                 }
+                f.read((char*)&a,sizeof(a));
+             }
+             if(!found)
+                cout<<"book not found!"<<endl;
+            f.close();
+         }
+       }
+
+       void bkdel()
+       {
+           book a;
+           char tempbknam[25];
+           fflush(stdin);
+           cout<<"Enter book name: ";
+           cin.getline(tempbknam,25);
+           ifstream f;
+           ofstream f1;
+           f.open("book.dat",ios::binary);
+           f1.open("temp.dat",ios::binary);
+           f.read((char*)&a,sizeof(a));
+
+           while(!f.eof())
+           {
+               if(strcmp(a.getbkname(),tempbknam)!=0)
+               {
+                   f1.write((char*)&a,sizeof(a));
+               }
+               f.read((char*)&a,sizeof(a));
+
+           }
+           f.close();
+           f1.close();
+           remove("book.dat");
+           rename("temp.dat","book.dat");
+           cout<<"Book deleted"<<endl;
+
+       }
+
+       void bkmodify()
+       {
+           book a,b;
+           ifstream f;
+           ofstream f1;
+           f.open("book.dat",ios::binary);
+           f1.open("temp1.dat",ios::binary);
+
+           char modibook[25];
+           fflush(stdin);
+           cout<<"Enter the name of the book to modify: ";
+           cin.getline(modibook,25);
+           f.read((char*)&a,sizeof(a));
+           while(!f.eof())
+           {
+
+             if(strcmp(a.getbkname(),modibook)==0)
+             {
+               cout<<"Enter the modified details: "<<endl;
+               b.getdata1();
+               f1.write((char*)&b,sizeof(b));
+             }
+             else
+             {
+               f1.write((char*)&a,sizeof(a));
+             }
+             f.read((char*)&a,sizeof(a));
+          }
+          f.close();
+          f1.close();
+          remove("book.dat");
+          rename("temp1.dat","book.dat");
+          cout<<"Book details modified successfully"<<endl;
+        }
+
+        void clearall()
+        {
+            fstream f;
+            f.open("book.dat",ios::out);
+            cout<<"All data cleared!";
+            f.close();
+        }
+};
+
+class guest:protected book
+{
+public:
+
+       void complains()
+       {
+           char cp[75];
+           ofstream f;
+           f.open("cuscomplains.dat",ios::out|ios::binary);
+           cout<<"Enter complains: ";
+           fflush(stdin);
+           cin.getline(cp,75);
+           f.write((char*)&cp,sizeof(cp));
+           cout<<"Complain registered successfully, sorry for the inconvenience";
+           f.close();
+       }
+      void complainsdis()
+      {
+        ifstream f8;
+        f8.open("cuscomplains.dat", ios::in | ios::binary);
+        char cp[75];
+        if (!f8)
+            cout << "File crashed!";
+        else
+        {
+            f8.read((char*)&cp, sizeof(cp));
+            while (!f8.eof())
+            {
+                cout << cp << endl;
+                f8.read((char*)&cp, sizeof(cp));
+            }
+        }
+        f8.close();
+    }
+
+   void requestbooks()
+    {
+        ofstream f;
+        f.open("cusreq.dat",ios::out|ios::binary);
+        if(!f)
+           cout<<"Library does not approve any request for purchasing any books at the moment, sorry";
+        else
+        {
+            char tempbkname[25];
+            fflush(stdin);
+            cout<<"Enter the book name to request: ";
+            cin.getline(tempbkname,25);
+            f.write((char*)&tempbkname,sizeof(25));
+            cout<<"Request recorded";
+            f.close();
+        }
+    }
+
+void displayrequests()
+{
+    ifstream f;
+    f.open("cusreq.dat", ios::in | ios::binary);
+    if (!f)
+        cout << "No requests made by users\n";
+    else
+    {
+        char tempbkname[25];
+        f.read((char*)&tempbkname, sizeof(25));
+        while (!f.eof())
+        {
+            cout << "Book requested: " << tempbkname << endl;
+            f.read((char*)&tempbkname, sizeof(25));
+        }
+        f.close();
+    }
+}
+
+void displayByGenre() {
+    ifstream fin("book.dat", ios::binary);
+    if (!fin) {
+        cout << "Error: could not open file.\n";
+        return;
+    }
+
+    char searchGenre[25];
+    cout << "Enter a genre to search: ";
+    cin >> searchGenre;
+
+    book b;
+    bool found = false;
+    while (fin.read(reinterpret_cast<char*>(&b), sizeof(b))) {
+        if (strcmp(b.getgenrename(), searchGenre) == 0) {
+            if (!found) {
+                cout << "Books in genre \"" << searchGenre << "\":\n";
+                cout << "----------------------------------------------\n";
+                cout << setw(20)<<setfill(' ') << left << "Book name"
+                     << setw(20) << left << "Publisher"
+                     << setw(10) << left << "Qty"
+                     << setw(10) << left << "Price"
+                     << setw(15) << left << "ISBN"
+                     << setw(75) << left << "Synopsis" << "\n";
+                cout << "----------------------------------------------\n";
+                found = true;
+            }
+            cout << setw(20) << left << b.getbkname()
+                 << setw(20) << left << b.getpubname()
+                 << setw(10) << left << b.getbkqty()
+                 << setw(10) << left << b.getprice()
+                 << setw(15) << left << b.getisbn()
+                 << setw(75) << left << b.getsynopsis() << "\n";
+        }
+    }
+
+    if (!found) {
+        cout << "No books found in genre \"" << searchGenre << "\".\n";
+    }
+
+    fin.close();
+}
+void generatebill() {
+    ifstream fin("book.dat", ios::binary);
+    if (!fin) {
+        cout << "Error: could not open file.\n";
+        return;
+    }
+
+    int isbn, qty;
+    int total_price = 0;
+
+    cout << "Enter ISBN of book to purchase: ";
+    cin >> isbn;
+
+    cout << "Enter quantity: ";
+    cin >> qty;
+
+    book b;
+    bool book_found = false;
+    while (fin.read(reinterpret_cast<char*>(&b), sizeof(b))) {
+        if (b.getisbn() == isbn) {
+            book_found = true;
+
+            if (b.getbkqty() >= qty) {
+                int price = qty * b.getprice();
+                cout << "\nBill:\n";
+                cout << "Book Name: " << b.getbkname() << endl;
+                cout << "Publisher Name: " << b.getpubname() << endl;
+                cout << "Quantity: " << qty << endl;
+                cout << "Price per book: " << b.getprice() << endl;
+                cout << "Total price: " << price << endl;
+                total_price = price;
+            } else {
+                cout << "book unavailable\n";
+            }
+
+            break;
+        }
+    }
+
+    fin.close();
+
+    if (!book_found) {
+        cout << "Error: Book with ISBN " << isbn << " not found.\n";
+    }
+
+    cout << "----------------------------------------------\n\n";
+}
+
+
+
+
+};
+
+int main()
+{
+    int userch,adminchoice,guestchoice;
+    char yn;
+    cout << "--------------------------------------------------------------------------" << endl;
+    cout << setw(50) << setfill(' ') << "LIBRARY MANAGEMENT SYSTEM" << endl;
+    cout << "--------------------------------------------------------------------------" << endl;
+    cout << setfill('-') << setw(75) << "" << endl;
+    cout << setfill(' ') << setw(40) << "MENU" << endl;
+    cout << setfill('-') << setw(75) << "" << endl;
+    cout<<"     1. Admin"<<endl;
+    cout<<"     2. Guest"<<endl;
+
+    admin a;
+    guest g;
+    if(a.checking()==1)
+    {
+        do
+        {
+            cout << "--------------------------------------------------------------------------" << endl;
+            cout << setw(50) << setfill(' ') << "LIBRARY MANAGEMENT SYSTEM (ADMIN CONSOLE)-ACCESS DENIED TO PUBLIC" << endl;
+            cout << "--------------------------------------------------------------------------" << endl;
+            cout << setfill('-') << setw(75) << "" << endl;
+            cout << setfill(' ') << setw(40) << "MENU" << endl;
+            cout << setfill('-') << setw(75) << "" << endl;
+            cout << setw(75) <<setfill(' ')<< left << "1. Add a new book" << endl;
+            cout << setw(75) << left << "2. Display all books" << endl;
+            cout << setw(75) << left << "3. Search for a book" << endl;
+            cout << setw(75) << left << "4. Remove a book" << endl;
+            cout << setw(75) <<left << "5. Update book details"<<endl;
+            cout << setw(75) << left << "6. Remove all books" << endl;
+            cout << setw(75) << left << "8. Open complains file" << endl;
+            cout << setw(75) << left << "9. Open requests file" << endl;
+            cout << setw(75) << left << "7. Exit" << endl;
+            cout << setfill('-') << setw(75) << "" << endl;
+
+              cout<<"Enter your choice: ";
+              cin>>adminchoice;
+
+            if(adminchoice==1)
+            {
+                a.addbk();
+            }
+
+            else if(adminchoice==2)
+            {
+                a.filedis();
+            }
+            else if(adminchoice==3)
+            {
+                a.ser();
+            }
+            else if(adminchoice==4)
+            {
+                a.bkdel();
+            }
+            else if(adminchoice==5)
+            {
+                a.bkmodify();
+            }
+            else if(adminchoice==6)
+            {
+                a.clearall();
+            }
+            else if(adminchoice==8)
+            {
+                guest g;
+                g.complainsdis();
+            }
+            else if(adminchoice==9)
+            {
+                g.displayrequests();
+            }
+            else if(adminchoice==7)
+            {
+                break;
+            }
+            cout<<"Do you want to continue?:";
+            cin>>yn;
+        }while(yn=='y');
+    }
+
+
+    else if(a.checking()==2)
+    {
+        do
+        {
+            cout << "--------------------------------------------------------------------------" << endl;
+            cout << setw(50) << setfill(' ') << "WELCOME TO ABC LIBRARY (GUEST CONSOLE)" << endl;
+            cout << "--------------------------------------------------------------------------" << endl;
+            cout << setfill('-') << setw(75) << "" << endl;
+            cout << setfill(' ') << setw(40) << "MENU" << endl;
+            cout << setfill('-') << setw(75) << "" << endl;
+            cout << setw(75) <<setfill(' ')<< left << "1. Display all books" << endl;
+            cout << setw(75) << left << "2. Search for a book" << endl;
+            cout << setw(75) << left << "3. Enter complains" << endl;
+            cout << setw(75) << left << "4. Enter this option to request unavailable books" << endl;
+            cout << setw(75) <<left << "5. sort and display the books according to genre"<<endl;
+            cout << setw(75) << left << "7. Generate Bill" << endl;
+            cout << setw(75) << left << "6. Exit" << endl;
+            cout << setfill('-') << setw(75) << "" << endl;
+
+              cout<<"Enter your choice: ";
+              cin>>guestchoice;
+
+            if(guestchoice==1)
+            {
+                a.filedis();
+            }
+
+            else if(guestchoice==2)
+            {
+                a.ser();
+            }
+            else if(guestchoice==3)
+            {
+                g.complains();
+            }
+            else if(guestchoice==4)
+            {
+                g.requestbooks();
+            }
+            else if(guestchoice==5)
+            {
+                g.displayByGenre();
+            }
+            else if(guestchoice==7)
+            {
+                g.generatebill();
+            }
+            else if(guestchoice==6)
+            {
+                break;
+            }
+            cout<<"Do you want to continue?:";
+            cin>>yn;
+        }while(yn=='y');
+    }
+
+
+    else
+        cout<<"Invalid option";
